@@ -56,6 +56,13 @@ class Interest(models.Model):
 
 
 class User(AbstractUser):
+    MALE = "M"
+    FEMALE = "F"
+    UNDEFINED = "U"
+    NOT_SPECIFIED = "N"
+
+    GENDER = (MALE, "Homem")
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None
     email = models.EmailField(unique=True)
@@ -65,6 +72,8 @@ class User(AbstractUser):
     interests = models.ManyToManyField(
         Interest, through="UserInterest", related_name="users", blank=True
     )
+
+    profession = models.CharField(max_length=255, blank=True)
 
     is_confirmed = models.BooleanField(default=False)
     has_uploaded_photo = models.BooleanField(default=False)
