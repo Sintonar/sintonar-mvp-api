@@ -14,6 +14,7 @@ from sintonar.apps.authentication.models import (
 )
 from sintonar.apps.authentication.serializers.fields.user import InterestField
 from sintonar.apps.utils.image import resize_image
+from sintonar.apps.utils.serializers.fields import CustomChoiceField
 
 
 class JWTSerializer(TokenObtainPairSerializer):
@@ -45,6 +46,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=False, allow_blank=True, default="")
+    gender = CustomChoiceField(choices=User.GENDER)
     interests = InterestField(many=True, required=False)
 
     class Meta:
@@ -56,6 +58,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "interests",
+            "gender",
         )
 
     def create(self, validated_data) -> User:
@@ -149,6 +152,8 @@ class UserSerializer(serializers.ModelSerializer):
     age = serializers.IntegerField(read_only=True)
     full_name = serializers.CharField(read_only=True)
     interests = InterestSerializer(many=True, read_only=True)
+    gender = CustomChoiceField(choices=User.GENDER)
+    school_level = CustomChoiceField(choices=User.SCHOOL_LEVEL, required=False)
 
     class Meta:
         model = User
@@ -164,6 +169,10 @@ class UserSerializer(serializers.ModelSerializer):
             "has_description",
             "has_uploaded_photo",
             "interests",
+            "gender",
+            "school_level",
+            "educational_institution",
+            "course",
         )
         read_only_fields = (
             "id",

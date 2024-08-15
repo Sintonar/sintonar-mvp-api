@@ -56,18 +56,58 @@ class Interest(models.Model):
 
 
 class User(AbstractUser):
-    MALE = "M"
-    FEMALE = "F"
-    UNDEFINED = "U"
+    MAN = "M"
+    WOMAN = "W"
+    NON_BINARY = "N"
     NOT_SPECIFIED = "N"
 
-    GENDER = (MALE, "Homem")
+    GENDER = (
+        (MAN, "Homem"),
+        (WOMAN, "Mulher"),
+        (NON_BINARY, "Não-binário"),
+        (NOT_SPECIFIED, "Prefiro não informar"),
+    )
+
+    NAO_INFORMADO = "NI"
+    ENSINO_FUNDAMENTAL_INCOMPLETO = "EFI"
+    ENSINO_FUNDAMENTAL_COMPLETO = "EFC"
+    ENSINO_MEDIO_INCOMPLETO = "EMI"
+    ENSINO_MEDIO_COMPLETO = "EMC"
+    ENSINO_TECNICO = "ET"
+    ENSINO_SUPERIOR_INCOMPLETO = "ESI"
+    ENSINO_SUPERIOR_COMPLETO = "ESC"
+    POS_GRADUACAO = "PG"
+    MESTRADO = "ME"
+    DOUTORADO = "DO"
+    POS_DOUTORADO = "PD"
+
+    SCHOOL_LEVEL = (
+        (NAO_INFORMADO, "Não informado"),
+        (ENSINO_FUNDAMENTAL_INCOMPLETO, "Ensino Fundamental Incompleto"),
+        (ENSINO_FUNDAMENTAL_COMPLETO, "Ensino Fundamental Completo"),
+        (ENSINO_MEDIO_INCOMPLETO, "Ensino Médio Incompleto"),
+        (ENSINO_MEDIO_COMPLETO, "Ensino Médio Completo"),
+        (ENSINO_TECNICO, "Ensino Técnico"),
+        (ENSINO_SUPERIOR_INCOMPLETO, "Ensino Superior Incompleto"),
+        (ENSINO_SUPERIOR_COMPLETO, "Ensino Superior Completo"),
+        (POS_GRADUACAO, "Pós-graduação (Lato Sensu)"),
+        (MESTRADO, "Mestrado"),
+        (DOUTORADO, "Doutorado"),
+        (POS_DOUTORADO, "Pós-doutorado"),
+    )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None
     email = models.EmailField(unique=True)
     birthday = models.DateField()
     description = models.TextField(blank=True)
+
+    gender = models.CharField(max_length=1, choices=GENDER, default=NOT_SPECIFIED)
+    school_level = models.CharField(
+        max_length=3, choices=SCHOOL_LEVEL, default=NAO_INFORMADO
+    )
+    educational_institution = models.CharField(max_length=255, blank=True)
+    course = models.CharField(max_length=255, blank=True)
 
     interests = models.ManyToManyField(
         Interest, through="UserInterest", related_name="users", blank=True
