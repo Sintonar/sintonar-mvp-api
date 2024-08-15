@@ -206,8 +206,8 @@ AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=86400",
 }
 
-# DEFAULT_FILE_STORAGE = 'sintonar.storage_backends.MediaStorage'
-# PRIVATE_FILE_STORAGE = 'sintonar.storage_backends.PrivateMediaStorage'
+DEFAULT_FILE_STORAGE = "sintonar.storage_backends.MediaStorage"
+PRIVATE_FILE_STORAGE = "sintonar.storage_backends.PrivateMediaStorage"
 
 SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,

@@ -4,7 +4,7 @@ from datetime import date
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
-# from sintonar.storage_backends import PrivateMediaStorage FIXME: Change to PrivateMediaStorage When AWS is configured
+from sintonar.storage_backends import PrivateMediaStorage
 
 
 class UserManager(BaseUserManager):
@@ -96,11 +96,9 @@ def model_directory_path(instance, filename):
 class UserPhoto(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    # photos = models.ImageField(
-    #     upload_to=model_directory_path, storage=PrivateMediaStorage())
     photos = models.ImageField(
-        upload_to=model_directory_path
-    )  # FIXME: Change to PrivateMediaStorage When AWS is configured
+        upload_to=model_directory_path, storage=PrivateMediaStorage()
+    )
     is_favorite = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
