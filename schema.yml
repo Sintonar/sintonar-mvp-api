@@ -609,6 +609,16 @@ components:
           format: email
       required:
       - email
+    GenderEnum:
+      enum:
+      - M
+      - W
+      - N
+      type: string
+      description: |-
+        * `M` - Homem
+        * `W` - Mulher
+        * `N` - Prefiro não informar
     Interest:
       type: object
       properties:
@@ -821,6 +831,16 @@ components:
           items:
             $ref: '#/components/schemas/Interest'
           readOnly: true
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        school_level:
+          $ref: '#/components/schemas/SchoolLevelEnum'
+        educational_institution:
+          type: string
+          maxLength: 255
+        course:
+          type: string
+          maxLength: 255
     PatchedUserChangePassword:
       type: object
       properties:
@@ -854,6 +874,34 @@ components:
           type: string
       required:
       - token
+    SchoolLevelEnum:
+      enum:
+      - NI
+      - EFI
+      - EFC
+      - EMI
+      - EMC
+      - ET
+      - ESI
+      - ESC
+      - PG
+      - ME
+      - DO
+      - PD
+      type: string
+      description: |-
+        * `NI` - Não informado
+        * `EFI` - Ensino Fundamental Incompleto
+        * `EFC` - Ensino Fundamental Completo
+        * `EMI` - Ensino Médio Incompleto
+        * `EMC` - Ensino Médio Completo
+        * `ET` - Ensino Técnico
+        * `ESI` - Ensino Superior Incompleto
+        * `ESC` - Ensino Superior Completo
+        * `PG` - Pós-graduação (Lato Sensu)
+        * `ME` - Mestrado
+        * `DO` - Doutorado
+        * `PD` - Pós-doutorado
     TokenRefresh:
       type: object
       properties:
@@ -906,11 +954,22 @@ components:
           items:
             $ref: '#/components/schemas/Interest'
           readOnly: true
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        school_level:
+          $ref: '#/components/schemas/SchoolLevelEnum'
+        educational_institution:
+          type: string
+          maxLength: 255
+        course:
+          type: string
+          maxLength: 255
       required:
       - age
       - birthday
       - email
       - full_name
+      - gender
       - has_description
       - has_uploaded_photo
       - id
@@ -1012,10 +1071,15 @@ components:
           items:
             type: string
             format: uuid
+          readOnly: true
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
       required:
       - birthday
       - email
       - first_name
+      - gender
+      - interests
       - password
   securitySchemes:
     jwtAuth:
