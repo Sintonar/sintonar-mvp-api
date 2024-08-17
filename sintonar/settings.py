@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import ast
 import logging
 import os
 from datetime import timedelta
@@ -37,6 +38,8 @@ ALLOWED_HOSTS = config(
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS", cast=lambda v: [s.strip() for s in v.split(", ")]
 )
+
+ADMINS = ast.literal_eval(config("ADMIN_EMAILS"))
 
 logging.basicConfig(
     format="%(asctime)s - %(process)d - %(levelname)s - %(message)s",
@@ -84,11 +87,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# CORS_ALLOWED_ORIGINS = config(
-#    'ALLOWED_HOSTS_CORS',
-#    cast=lambda v: [s.strip() for s in v.split(', ')]
-# )
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = config(
+    "ALLOWED_HOSTS_CORS", cast=lambda v: [s.strip() for s in v.split(", ")]
+)
+# CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = "sintonar.urls"
 
 TEMPLATES = [
@@ -180,13 +182,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 TEST_RUNNER = "sintonar.test_runner.FastTestRunner"
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_HOST_USER = config("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+EMAIL_BACKEND = "django_amazon_ses.EmailBackend"
+
+AWS_SES_ACCESS_KEY_ID = config("AWS_SES_ACCESS_KEY_ID")
+AWS_SES_SECRET_ACCESS_KEY = config("AWS_SES_SECRET_ACCESS_KEY")
+AWS_SES_REGION = "sa-east-1"
+AWS_SES_FROM_EMAIL = config("AWS_SES_FROM_EMAIL")
+
+DEFAULT_FROM_EMAIL = AWS_SES_FROM_EMAIL
+
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
