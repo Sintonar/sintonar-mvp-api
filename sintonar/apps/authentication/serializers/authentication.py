@@ -12,7 +12,6 @@ from sintonar.apps.authentication.models import (
     UserInterest,
     UserPhoto,
 )
-from sintonar.apps.authentication.serializers.fields.user import InterestField
 from sintonar.apps.utils.image import resize_image
 from sintonar.apps.utils.serializers.fields import CustomChoiceField
 
@@ -47,7 +46,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=False, allow_blank=True, default="")
     gender = CustomChoiceField(choices=User.GENDER)
-    interests = InterestField(many=True, required=False)
 
     class Meta:
         model = User
@@ -62,13 +60,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data) -> User:
-        interests = validated_data.pop("interests", [])
-
         user = User.objects.create_user(
             **validated_data,
         )
-
-        user.interests.set(interests)
 
         UserConfirm.objects.create(user=user)
 
@@ -193,8 +187,13 @@ class UserSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data) -> User:
+        interests = validated_data.pop("interests", [])
+
         if "description" in validated_data and instance.has_description is False:
             instance.has_description = True
+
+        if interests:
+            instance.interests.set(interests)
 
         return super().update(instance, validated_data)
 
