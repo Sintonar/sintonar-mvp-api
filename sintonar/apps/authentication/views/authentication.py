@@ -1,22 +1,62 @@
+import operator
+from functools import reduce
+
 from django.db import transaction
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import GenericAPIView, UpdateAPIView
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.mixins import (
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
-from sintonar.apps.authentication.models import User, UserConfirm, UserPhoto
+from sintonar.apps.authentication.models import (
+    Interest,
+    User,
+    UserConfirm,
+    UserInterest,
+    UserPhoto,
+)
 from sintonar.apps.authentication.serializers.authentication import (
+    InterestSerializer,
     UserChangePasswordSerializer,
+    UserInterestSerializer,
     UserPhotoSerializer,
     UserRegisterSerializer,
     UserSerializer,
 )
 from sintonar.apps.authentication.signals import send_email_confirmation
+
+
+class InterestViewSet(ListModelMixin, GenericViewSet):
+    queryset = Interest.objects.all()
+    serializer_class = InterestSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        name = self.request.query_params.get("name", None)
+
+        query = Q()
+
+        if name:
+            query &= reduce(
+                operator.__and__,
+                (Q(name__unaccent__icontains=term) for term in name.split()),
+            )
+
+            queryset = queryset.filter(query)
+
+        return queryset.order_by("name")
 
 
 class UserRegisterViewSet(CreateModelMixin, GenericViewSet):
@@ -29,14 +69,12 @@ class UserRegisterViewSet(CreateModelMixin, GenericViewSet):
         headers = self.get_success_headers(serializer.data)
 
         data = {
-            "message": _("User created successfully. Check your email to confirm your account."),
+            "message": _(
+                "User created successfully. Check your email to confirm your account."
+            ),
         }
 
-        return Response(
-            data,
-            status=status.HTTP_201_CREATED,
-            headers=headers
-        )
+        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class UserConfirmView(APIView):
@@ -50,9 +88,7 @@ class UserConfirmView(APIView):
 
             if user.is_confirmed:
                 return Response(
-                    {
-                        "message": _("User already confirmed.")
-                    },
+                    {"message": _("User already confirmed.")},
                     status=status.HTTP_200_OK,
                 )
 
@@ -60,17 +96,10 @@ class UserConfirmView(APIView):
             user.save()
 
         except UserConfirm.DoesNotExist:
-            raise ValidationError(
-                detail={
-                    "detail": _("Invalid identification code.")
-                }
-            )
+            raise ValidationError(detail={"detail": _("Invalid identification code.")})
 
         return Response(
-            {
-                "message": _("User confirmed successfully.")
-            },
-            status=status.HTTP_200_OK
+            {"message": _("User confirmed successfully.")}, status=status.HTTP_200_OK
         )
 
 
@@ -82,9 +111,7 @@ class UserResendConfirmView(APIView):
 
         if not email:
             raise ValidationError(
-                detail={
-                    "detail": _("Email is required.")
-                },
+                detail={"detail": _("Email is required.")},
             )
 
         try:
@@ -92,9 +119,7 @@ class UserResendConfirmView(APIView):
 
             if user.is_confirmed:
                 return Response(
-                    {
-                        "message": _("User already confirmed.")
-                    },
+                    {"message": _("User already confirmed.")},
                     status=status.HTTP_200_OK,
                 )
 
@@ -109,19 +134,12 @@ class UserResendConfirmView(APIView):
             pass
 
         return Response(
-            {
-                "message": _("Confirmation email sent successfully.")
-            },
-            status=status.HTTP_200_OK
+            {"message": _("Confirmation email sent successfully.")},
+            status=status.HTTP_200_OK,
         )
 
 
-class UserViewSet(
-    RetrieveModelMixin,
-    UpdateModelMixin,
-    GenericViewSet,
-    GenericAPIView
-):
+class UserViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet, GenericAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
@@ -136,11 +154,8 @@ class UserPhotoViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return UserPhoto.objects.filter(
-            user=self.request.user
-        ).order_by(
-            "-is_favorite",
-            "updated_at"
+        return UserPhoto.objects.filter(user=self.request.user).order_by(
+            "-is_favorite", "updated_at"
         )
 
     @transaction.atomic
@@ -155,8 +170,23 @@ class UserPhotoViewSet(ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-class UserChangePasswordView(UpdateAPIView,
-                             UpdateModelMixin):
+class UserInterestViewSet(
+    ListModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet
+):
+    queryset = UserInterest.objects.all()
+    serializer_class = UserInterestSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(user=self.request.user)
+            .order_by("interest__name")
+        )
+
+
+class UserChangePasswordView(UpdateAPIView, UpdateModelMixin):
     queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = UserChangePasswordSerializer

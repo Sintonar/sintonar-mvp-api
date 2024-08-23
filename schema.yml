@@ -72,6 +72,28 @@ paths:
       responses:
         '200':
           description: No response body
+  /v1/authentication/interests/:
+    get:
+      operationId: authentication_interests_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - authentication
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInterestList'
+          description: ''
   /v1/authentication/me/:
     get:
       operationId: authentication_me_retrieve
@@ -420,21 +442,79 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenRefresh'
           description: ''
-  /v1/crush/:
+  /v1/authentication/user-interests/:
     get:
-      operationId: crush_list
+      operationId: authentication_user_interests_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - authentication
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserInterestList'
+          description: ''
+  /v1/authentication/user-interests/{id}/:
+    get:
+      operationId: authentication_user_interests_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user interest.
+        required: true
+      tags:
+      - authentication
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInterest'
+          description: ''
+    delete:
+      operationId: authentication_user_interests_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user interest.
+        required: true
+      tags:
+      - authentication
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /v1/match/:
+    get:
+      operationId: match_list
       parameters:
       - in: query
         name: matched
         schema:
           type: boolean
-        description: Filter by matched crushs.
+        description: Filter by matched users.
         examples:
           Matched:
             value: 'true'
-            summary: If you want to filter by matched crushs.
+            summary: If you want to filter by matched users.
       tags:
-      - crush
+      - match
       security:
       - jwtAuth: []
       responses:
@@ -444,23 +524,23 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/CrushDisplay'
+                  $ref: '#/components/schemas/MatchDisplay'
           description: ''
     post:
-      operationId: crush_create
+      operationId: match_create
       tags:
-      - crush
+      - match
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CrushCreate'
+              $ref: '#/components/schemas/MatchCreate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/CrushCreate'
+              $ref: '#/components/schemas/MatchCreate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/CrushCreate'
+              $ref: '#/components/schemas/MatchCreate'
         required: true
       security:
       - jwtAuth: []
@@ -469,21 +549,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CrushCreate'
+                $ref: '#/components/schemas/MatchCreate'
           description: ''
-  /v1/crush/{id}/:
+  /v1/match/{id}/:
     get:
-      operationId: crush_retrieve
+      operationId: match_retrieve
       parameters:
       - in: path
         name: id
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this crush.
+        description: A UUID string identifying this match.
         required: true
       tags:
-      - crush
+      - match
       security:
       - jwtAuth: []
       responses:
@@ -491,12 +571,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CrushDisplay'
+                $ref: '#/components/schemas/MatchDisplay'
           description: ''
-  /v1/crush/users/:
+  /v1/match/users/:
     get:
-      operationId: crush_users_list
+      operationId: match_users_list
       parameters:
+      - in: query
+        name: interest
+        schema:
+          type: integer
+        description: The interest id you want to filter by.
       - name: page
         required: false
         in: query
@@ -504,7 +589,7 @@ paths:
         schema:
           type: integer
       tags:
-      - crush
+      - match
       security:
       - jwtAuth: []
       responses:
@@ -512,53 +597,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedUserCrushDisplayList'
+                $ref: '#/components/schemas/PaginatedUserMatchDisplayList'
           description: ''
 components:
   schemas:
-    CrushCreate:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-        user_from:
-          type: string
-          format: uuid
-        user_to:
-          type: string
-          format: uuid
-        kiss:
-          type: boolean
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-      required:
-      - created_at
-      - id
-      - updated_at
-      - user_from
-      - user_to
-    CrushDisplay:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-        user:
-          $ref: '#/components/schemas/UserCrushDisplay'
-        match:
-          type: boolean
-      required:
-      - id
-      - user
     Email:
       type: object
       properties:
@@ -576,20 +618,80 @@ components:
       description: |-
         * `M` - Homem
         * `W` - Mulher
-        * `N` - Não-binário
+        * `N` - Prefiro não informar
+    Interest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+      required:
+      - id
+      - name
     JWT:
       type: object
       properties:
         email:
           type: string
+          writeOnly: true
         password:
           type: string
           writeOnly: true
       required:
       - email
       - password
-    PaginatedUserCrushDisplayList:
+    MatchCreate:
       type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user_from:
+          type: string
+          format: uuid
+        user_to:
+          type: string
+          format: uuid
+        like:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - updated_at
+      - user_from
+      - user_to
+    MatchDisplay:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          $ref: '#/components/schemas/UserMatchDisplay'
+        match:
+          type: boolean
+      required:
+      - id
+      - user
+    PaginatedInterestList:
+      type: object
+      required:
+      - count
+      - results
       properties:
         count:
           type: integer
@@ -607,9 +709,58 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/UserCrushDisplay'
+            $ref: '#/components/schemas/Interest'
+    PaginatedUserInterestList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserInterest'
+    PaginatedUserMatchDisplayList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserMatchDisplay'
     PaginatedUserPhotoList:
       type: object
+      required:
+      - count
+      - results
       properties:
         count:
           type: integer
@@ -663,10 +814,6 @@ components:
           maxLength: 150
         description:
           type: string
-        gender:
-          $ref: '#/components/schemas/GenderEnum'
-        preference:
-          $ref: '#/components/schemas/PreferenceEnum'
         full_name:
           type: string
           readOnly: true
@@ -679,6 +826,21 @@ components:
         has_uploaded_photo:
           type: boolean
           readOnly: true
+        interests:
+          type: array
+          items:
+            $ref: '#/components/schemas/Interest'
+          readOnly: true
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        school_level:
+          $ref: '#/components/schemas/SchoolLevelEnum'
+        educational_institution:
+          type: string
+          maxLength: 255
+        course:
+          type: string
+          maxLength: 255
     PatchedUserChangePassword:
       type: object
       properties:
@@ -705,16 +867,6 @@ components:
           readOnly: true
         is_favorite:
           type: boolean
-    PreferenceEnum:
-      enum:
-      - M
-      - W
-      - A
-      type: string
-      description: |-
-        * `M` - Homem
-        * `W` - Mulher
-        * `A` - Todos
     ResetToken:
       type: object
       properties:
@@ -722,6 +874,34 @@ components:
           type: string
       required:
       - token
+    SchoolLevelEnum:
+      enum:
+      - NI
+      - EFI
+      - EFC
+      - EMI
+      - EMC
+      - ET
+      - ESI
+      - ESC
+      - PG
+      - ME
+      - DO
+      - PD
+      type: string
+      description: |-
+        * `NI` - Não informado
+        * `EFI` - Ensino Fundamental Incompleto
+        * `EFC` - Ensino Fundamental Completo
+        * `EMI` - Ensino Médio Incompleto
+        * `EMC` - Ensino Médio Completo
+        * `ET` - Ensino Técnico
+        * `ESI` - Ensino Superior Incompleto
+        * `ESC` - Ensino Superior Completo
+        * `PG` - Pós-graduação (Lato Sensu)
+        * `ME` - Mestrado
+        * `DO` - Doutorado
+        * `PD` - Pós-doutorado
     TokenRefresh:
       type: object
       properties:
@@ -757,10 +937,6 @@ components:
           maxLength: 150
         description:
           type: string
-        gender:
-          $ref: '#/components/schemas/GenderEnum'
-        preference:
-          $ref: '#/components/schemas/PreferenceEnum'
         full_name:
           type: string
           readOnly: true
@@ -773,14 +949,31 @@ components:
         has_uploaded_photo:
           type: boolean
           readOnly: true
+        interests:
+          type: array
+          items:
+            $ref: '#/components/schemas/Interest'
+          readOnly: true
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        school_level:
+          $ref: '#/components/schemas/SchoolLevelEnum'
+        educational_institution:
+          type: string
+          maxLength: 255
+        course:
+          type: string
+          maxLength: 255
       required:
       - age
       - birthday
       - email
       - full_name
+      - gender
       - has_description
       - has_uploaded_photo
       - id
+      - interests
     UserChangePassword:
       type: object
       properties:
@@ -793,7 +986,32 @@ components:
       required:
       - new_password
       - password
-    UserCrushDisplay:
+    UserInterest:
+      type: object
+      properties:
+        interest:
+          allOf:
+          - $ref: '#/components/schemas/Interest'
+          readOnly: true
+        members_count:
+          type: integer
+          readOnly: true
+        matched_members_count:
+          type: integer
+          readOnly: true
+        viewed_members_count:
+          type: integer
+          readOnly: true
+        not_viewed_members_count:
+          type: integer
+          readOnly: true
+      required:
+      - interest
+      - matched_members_count
+      - members_count
+      - not_viewed_members_count
+      - viewed_members_count
+    UserMatchDisplay:
       type: object
       properties:
         id:
@@ -804,14 +1022,11 @@ components:
           type: string
         age:
           type: integer
-        gender:
-          $ref: '#/components/schemas/GenderEnum'
         description:
           type: string
       required:
       - age
       - full_name
-      - gender
       - id
     UserPhoto:
       type: object
@@ -851,17 +1066,21 @@ components:
         last_name:
           type: string
           default: ''
+        interests:
+          type: array
+          items:
+            type: string
+            format: uuid
+          readOnly: true
         gender:
           $ref: '#/components/schemas/GenderEnum'
-        preference:
-          $ref: '#/components/schemas/PreferenceEnum'
       required:
       - birthday
       - email
       - first_name
       - gender
+      - interests
       - password
-      - preference
   securitySchemes:
     jwtAuth:
       type: http
