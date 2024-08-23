@@ -41,30 +41,80 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 
+class Interest(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "interests"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class User(AbstractUser):
     MAN = "M"
     WOMAN = "W"
-    NEUTRAL = "N"
+    NON_BINARY = "N"
+    NOT_SPECIFIED = "N"
 
     GENDER = (
         (MAN, "Homem"),
         (WOMAN, "Mulher"),
-        (NEUTRAL, "Não-binário"),
+        (NON_BINARY, "Não-binário"),
+        (NOT_SPECIFIED, "Prefiro não informar"),
     )
 
-    MAN = "M"
-    WOMAN = "W"
-    ALL = "A"
+    NAO_INFORMADO = "NI"
+    ENSINO_FUNDAMENTAL_INCOMPLETO = "EFI"
+    ENSINO_FUNDAMENTAL_COMPLETO = "EFC"
+    ENSINO_MEDIO_INCOMPLETO = "EMI"
+    ENSINO_MEDIO_COMPLETO = "EMC"
+    ENSINO_TECNICO = "ET"
+    ENSINO_SUPERIOR_INCOMPLETO = "ESI"
+    ENSINO_SUPERIOR_COMPLETO = "ESC"
+    POS_GRADUACAO = "PG"
+    MESTRADO = "ME"
+    DOUTORADO = "DO"
+    POS_DOUTORADO = "PD"
 
-    PREFERENCES = ((MAN, "Homem"), (WOMAN, "Mulher"), (ALL, "Todos"))
+    SCHOOL_LEVEL = (
+        (NAO_INFORMADO, "Não informado"),
+        (ENSINO_FUNDAMENTAL_INCOMPLETO, "Ensino Fundamental Incompleto"),
+        (ENSINO_FUNDAMENTAL_COMPLETO, "Ensino Fundamental Completo"),
+        (ENSINO_MEDIO_INCOMPLETO, "Ensino Médio Incompleto"),
+        (ENSINO_MEDIO_COMPLETO, "Ensino Médio Completo"),
+        (ENSINO_TECNICO, "Ensino Técnico"),
+        (ENSINO_SUPERIOR_INCOMPLETO, "Ensino Superior Incompleto"),
+        (ENSINO_SUPERIOR_COMPLETO, "Ensino Superior Completo"),
+        (POS_GRADUACAO, "Pós-graduação (Lato Sensu)"),
+        (MESTRADO, "Mestrado"),
+        (DOUTORADO, "Doutorado"),
+        (POS_DOUTORADO, "Pós-doutorado"),
+    )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = None
     email = models.EmailField(unique=True)
     birthday = models.DateField()
-    gender = models.CharField(max_length=1, choices=GENDER)
-    preference = models.CharField(max_length=1, choices=PREFERENCES)
     description = models.TextField(blank=True)
+
+    gender = models.CharField(max_length=1, choices=GENDER, default=NOT_SPECIFIED)
+    school_level = models.CharField(
+        max_length=3, choices=SCHOOL_LEVEL, default=NAO_INFORMADO
+    )
+    educational_institution = models.CharField(max_length=255, blank=True)
+    course = models.CharField(max_length=255, blank=True)
+
+    interests = models.ManyToManyField(
+        Interest, through="UserInterest", related_name="users", blank=True
+    )
+
+    profession = models.CharField(max_length=255, blank=True)
+
     is_confirmed = models.BooleanField(default=False)
     has_uploaded_photo = models.BooleanField(default=False)
     has_description = models.BooleanField(default=False)
@@ -72,7 +122,7 @@ class User(AbstractUser):
     updated_at = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["gender", "preference", "birthday", "first_name"]
+    REQUIRED_FIELDS = ["birthday", "first_name"]
 
     objects = UserManager()
 
@@ -86,6 +136,53 @@ class User(AbstractUser):
     @property
     def full_name(self):
         return self.get_full_name()
+
+
+class UserInterest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    interest = models.ForeignKey(Interest, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "users_interests"
+        unique_together = ("user", "interest")
+
+    @property
+    def members(self):
+        return User.objects.filter(
+            id__in=UserInterest.objects.filter(interest=self.interest)
+            .exclude(user=self.user)
+            .values_list("user", flat=True)
+        ).order_by("first_name", "last_name")
+
+    @property
+    def members_count(self):
+        return self.members.count()
+
+    @property
+    def matched_members_count(self):
+        from sintonar.apps.match.models.match import Match
+
+        matchs = Match.objects.filter(
+            user_from=self.request.user, user_to__in=self.members, match=True
+        )
+
+        return matchs.count()
+
+    @property
+    def viewed_members_count(self):
+        from sintonar.apps.match.models.match import Match
+
+        matchs = Match.objects.filter(
+            user_from=self.request.user, user_to__in=self.members
+        )
+
+        return matchs.count()
+
+    @property
+    def not_viewed_members_count(self):
+        return self.members_count - self.viewed_members_count
 
 
 def model_directory_path(instance, filename):

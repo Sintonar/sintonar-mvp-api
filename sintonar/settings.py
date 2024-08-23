@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import ast
 import logging
 import os
 from datetime import timedelta
@@ -38,6 +39,8 @@ CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS", cast=lambda v: [s.strip() for s in v.split(", ")]
 )
 
+ADMINS = ast.literal_eval(config("ADMIN_EMAILS"))
+
 logging.basicConfig(
     format="%(asctime)s - %(process)d - %(levelname)s - %(message)s",
     datefmt="%d-%b-%y %H:%M:%S",
@@ -51,6 +54,7 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 # Application definition
 
 INSTALLED_APPS = [
+    "django.contrib.postgres",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -58,7 +62,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "sintonar.apps.authentication.apps.AuthenticationConfig",
-    "sintonar.apps.crush.apps.CrushConfig",
+    "sintonar.apps.match.apps.MatchConfig",
     "sintonar.apps.utils.apps.UtilsConfig",
     "rest_framework",
     "storages",
@@ -83,11 +87,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# CORS_ALLOWED_ORIGINS = config(
-#    'ALLOWED_HOSTS_CORS',
-#    cast=lambda v: [s.strip() for s in v.split(', ')]
-# )
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = config(
+    "ALLOWED_HOSTS_CORS", cast=lambda v: [s.strip() for s in v.split(", ")]
+)
+# CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = "sintonar.urls"
 
 TEMPLATES = [
@@ -179,13 +182,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 TEST_RUNNER = "sintonar.test_runner.FastTestRunner"
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_HOST_USER = config("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+EMAIL_BACKEND = "django_amazon_ses.EmailBackend"
+
+AWS_SES_ACCESS_KEY_ID = config("AWS_SES_ACCESS_KEY_ID")
+AWS_SES_SECRET_ACCESS_KEY = config("AWS_SES_SECRET_ACCESS_KEY")
+AWS_SES_REGION = "sa-east-1"
+AWS_SES_FROM_EMAIL = config("AWS_SES_FROM_EMAIL")
+
+DEFAULT_FROM_EMAIL = AWS_SES_FROM_EMAIL
+
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -229,13 +234,13 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "America/Fortaleza"
 
 
-# DBBACKUP_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-# DBBACKUP_STORAGE_OPTIONS = {
-#     "access_key": AWS_ACCESS_KEY_ID,
-#     "secret_key": AWS_SECRET_ACCESS_KEY,
-#     "bucket_name": AWS_STORAGE_BUCKET_NAME,
-#     "default_acl": "private",
-# }
+DBBACKUP_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+DBBACKUP_STORAGE_OPTIONS = {
+    "access_key": AWS_ACCESS_KEY_ID,
+    "secret_key": AWS_SECRET_ACCESS_KEY,
+    "bucket_name": AWS_STORAGE_BUCKET_NAME,
+    "default_acl": "private",
+}
 
 
 SPECTACULAR_SETTINGS = {
