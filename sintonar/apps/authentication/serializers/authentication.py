@@ -55,7 +55,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "birthday",
             "first_name",
             "last_name",
-            "interests",
             "gender",
         )
 
