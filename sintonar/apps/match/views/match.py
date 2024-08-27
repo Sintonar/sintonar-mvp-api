@@ -27,7 +27,7 @@ class UserMatchViewSet(GenericViewSet, ListAPIView, ListModelMixin):
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        interest = self.query_params.get("interest", None)
+        interest = self.request.query_params.get("interest", None)
 
         if not interest:
             raise ValidationError(
