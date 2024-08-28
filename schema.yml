@@ -463,6 +463,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedUserInterestList'
           description: ''
+    post:
+      operationId: authentication_user_interests_create
+      tags:
+      - authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserInterest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateUserInterest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateUserInterest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUserInterest'
+          description: ''
   /v1/authentication/user-interests/{id}/:
     get:
       operationId: authentication_user_interests_retrieve
@@ -601,6 +626,14 @@ paths:
           description: ''
 components:
   schemas:
+    CreateUserInterest:
+      type: object
+      properties:
+        interest:
+          type: string
+          format: uuid
+      required:
+      - interest
     Email:
       type: object
       properties:
@@ -829,8 +862,8 @@ components:
         interests:
           type: array
           items:
-            $ref: '#/components/schemas/Interest'
-          readOnly: true
+            type: string
+            format: uuid
         gender:
           $ref: '#/components/schemas/GenderEnum'
         school_level:
@@ -839,6 +872,9 @@ components:
           type: string
           maxLength: 255
         course:
+          type: string
+          maxLength: 255
+        profession:
           type: string
           maxLength: 255
     PatchedUserChangePassword:
@@ -952,8 +988,8 @@ components:
         interests:
           type: array
           items:
-            $ref: '#/components/schemas/Interest'
-          readOnly: true
+            type: string
+            format: uuid
         gender:
           $ref: '#/components/schemas/GenderEnum'
         school_level:
@@ -962,6 +998,9 @@ components:
           type: string
           maxLength: 255
         course:
+          type: string
+          maxLength: 255
+        profession:
           type: string
           maxLength: 255
       required:
@@ -1066,12 +1105,6 @@ components:
         last_name:
           type: string
           default: ''
-        interests:
-          type: array
-          items:
-            type: string
-            format: uuid
-          readOnly: true
         gender:
           $ref: '#/components/schemas/GenderEnum'
       required:
@@ -1079,7 +1112,6 @@ components:
       - email
       - first_name
       - gender
-      - interests
       - password
   securitySchemes:
     jwtAuth:

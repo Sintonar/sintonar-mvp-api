@@ -12,6 +12,7 @@ from sintonar.apps.authentication.models import (
     UserInterest,
     UserPhoto,
 )
+from sintonar.apps.authentication.serializers.fields.user import InterestField
 from sintonar.apps.utils.image import resize_image
 from sintonar.apps.utils.serializers.fields import CustomChoiceField
 
@@ -144,7 +145,7 @@ class InterestSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     age = serializers.IntegerField(read_only=True)
     full_name = serializers.CharField(read_only=True)
-    interests = InterestSerializer(many=True, read_only=True)
+    interests = InterestField(many=True)
     gender = CustomChoiceField(choices=User.GENDER)
     school_level = CustomChoiceField(choices=User.SCHOOL_LEVEL, required=False)
 
@@ -166,6 +167,7 @@ class UserSerializer(serializers.ModelSerializer):
             "school_level",
             "educational_institution",
             "course",
+            "profession",
         )
         read_only_fields = (
             "id",
@@ -216,6 +218,22 @@ class UserChangePasswordSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class CreateUserInterestSerializer(serializers.ModelSerializer):
+    interest = InterestField()
+
+    class Meta:
+        model = UserInterest
+        fields = ("interest",)
+
+    def validate_interest(self, value: Interest) -> Interest:
+        if self.context["request"].user.interests.filter(id=value.id).exists():
+            raise serializers.ValidationError(
+                {"interest": _("You already have this interest.")}
+            )
+
+        return value
 
 
 class UserInterestSerializer(serializers.ModelSerializer):

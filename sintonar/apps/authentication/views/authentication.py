@@ -27,6 +27,7 @@ from sintonar.apps.authentication.models import (
     UserPhoto,
 )
 from sintonar.apps.authentication.serializers.authentication import (
+    CreateUserInterestSerializer,
     InterestSerializer,
     UserChangePasswordSerializer,
     UserInterestSerializer,
@@ -171,11 +172,21 @@ class UserPhotoViewSet(ModelViewSet):
 
 
 class UserInterestViewSet(
-    ListModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet
+    ListModelMixin,
+    CreateModelMixin,
+    RetrieveModelMixin,
+    DestroyModelMixin,
+    GenericViewSet,
 ):
     queryset = UserInterest.objects.all()
     serializer_class = UserInterestSerializer
     permission_classes = (IsAuthenticated,)
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateUserInterestSerializer
+
+        return super().get_serializer_class()
 
     def get_queryset(self):
         return (
@@ -184,6 +195,9 @@ class UserInterestViewSet(
             .filter(user=self.request.user)
             .order_by("interest__name")
         )
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class UserChangePasswordView(UpdateAPIView, UpdateModelMixin):
