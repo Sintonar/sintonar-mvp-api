@@ -220,6 +220,22 @@ class UserChangePasswordSerializer(serializers.ModelSerializer):
         return instance
 
 
+class CreateUserInterestSerializer(serializers.ModelSerializer):
+    interest = InterestField()
+
+    class Meta:
+        model = UserInterest
+        fields = ("interest",)
+
+    def validate_interest(self, value: Interest) -> Interest:
+        if self.context["request"].user.interests.filter(id=value.id).exists():
+            raise serializers.ValidationError(
+                {"interest": _("You already have this interest.")}
+            )
+
+        return value
+
+
 class UserInterestSerializer(serializers.ModelSerializer):
     interest = InterestSerializer(read_only=True)
     members_count = serializers.IntegerField(read_only=True)
