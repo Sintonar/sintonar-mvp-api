@@ -829,8 +829,8 @@ components:
         interests:
           type: array
           items:
-            $ref: '#/components/schemas/Interest'
-          readOnly: true
+            type: string
+            format: uuid
         gender:
           $ref: '#/components/schemas/GenderEnum'
         school_level:
@@ -955,8 +955,8 @@ components:
         interests:
           type: array
           items:
-            $ref: '#/components/schemas/Interest'
-          readOnly: true
+            type: string
+            format: uuid
         gender:
           $ref: '#/components/schemas/GenderEnum'
         school_level:

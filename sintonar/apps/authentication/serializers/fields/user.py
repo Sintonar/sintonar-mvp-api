@@ -36,3 +36,9 @@ class InterestField(PrimaryKeyRelatedField):
             raise ValidationError(
                 detail={"detail": _(f'Invalid pk "{data}" - object does not exist.')}
             )
+
+    def to_representation(self, value):
+        return {
+            "id": value.id,
+            "name": value.name,
+        }
