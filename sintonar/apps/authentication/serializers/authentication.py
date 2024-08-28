@@ -166,6 +166,7 @@ class UserSerializer(serializers.ModelSerializer):
             "school_level",
             "educational_institution",
             "course",
+            "profession",
         )
         read_only_fields = (
             "id",
