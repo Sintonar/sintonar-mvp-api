@@ -841,6 +841,9 @@ components:
         course:
           type: string
           maxLength: 255
+        profession:
+          type: string
+          maxLength: 255
     PatchedUserChangePassword:
       type: object
       properties:
@@ -964,6 +967,9 @@ components:
         course:
           type: string
           maxLength: 255
+        profession:
+          type: string
+          maxLength: 255
       required:
       - age
       - birthday
@@ -1066,12 +1072,6 @@ components:
         last_name:
           type: string
           default: ''
-        interests:
-          type: array
-          items:
-            type: string
-            format: uuid
-          readOnly: true
         gender:
           $ref: '#/components/schemas/GenderEnum'
       required:
@@ -1079,7 +1079,6 @@ components:
       - email
       - first_name
       - gender
-      - interests
       - password
   securitySchemes:
     jwtAuth:
