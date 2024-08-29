@@ -445,13 +445,6 @@ paths:
   /v1/authentication/user-interests/:
     get:
       operationId: authentication_user_interests_list
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
       tags:
       - authentication
       security:
@@ -461,7 +454,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedUserInterestList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserInterest'
           description: ''
     post:
       operationId: authentication_user_interests_create
@@ -743,29 +738,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Interest'
-    PaginatedUserInterestList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserInterest'
     PaginatedUserMatchDisplayList:
       type: object
       required:

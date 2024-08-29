@@ -181,6 +181,7 @@ class UserInterestViewSet(
     queryset = UserInterest.objects.all()
     serializer_class = UserInterestSerializer
     permission_classes = (IsAuthenticated,)
+    pagination_class = None
 
     def get_serializer_class(self):
         if self.request.method == "POST":
