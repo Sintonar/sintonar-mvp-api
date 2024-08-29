@@ -252,3 +252,18 @@ class UserInterestSerializer(serializers.ModelSerializer):
             "viewed_members_count",
             "not_viewed_members_count",
         )
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        fields = (
+            "members_count",
+            "matched_members_count",
+            "viewed_members_count",
+            "not_viewed_members_count",
+        )
+
+        for field in fields:
+            representation.setdefault(field, 0)
+
+        return representation
