@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.db import transaction
 from rest_framework import serializers
 
 from sintonar.apps.authentication.models import User
@@ -26,6 +26,7 @@ class MatchCreateSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
+    @transaction.atomic
     def create(self, validated_data) -> Match:
         user_from = validated_data.pop("user_from")
         user_to = validated_data.pop("user_to")
