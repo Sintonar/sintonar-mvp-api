@@ -1,11 +1,14 @@
-from django.contrib.auth import get_user_model
+from django.db import transaction
 from rest_framework import serializers
 
+from sintonar.apps.authentication.models import User
 from sintonar.apps.authentication.serializers.authentication import UserPhotoSerializer
-from sintonar.apps.authentication.serializers.fields.user import UserField
+from sintonar.apps.authentication.serializers.fields.user import (
+    InterestField,
+    UserField,
+)
 from sintonar.apps.match.models.match import Match
-
-User = get_user_model()
+from sintonar.apps.utils.serializers.fields import CustomChoiceField
 
 
 class MatchCreateSerializer(serializers.ModelSerializer):
@@ -23,10 +26,11 @@ class MatchCreateSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
+    @transaction.atomic
     def create(self, validated_data) -> Match:
         user_from = validated_data.pop("user_from")
         user_to = validated_data.pop("user_to")
-        like = validated_data.pop("like")
+        like = validated_data.pop("like", False)
 
         match = Match.objects.filter(
             user_from=user_from,
@@ -44,7 +48,7 @@ class MatchCreateSerializer(serializers.ModelSerializer):
                 like=like,
             )
 
-        if match.kiss:
+        if match.like:
             match_liked = Match.objects.filter(
                 user_to=user_from,
                 user_from=user_to,
@@ -80,6 +84,8 @@ class MatchCreateSerializer(serializers.ModelSerializer):
 class UserMatchDisplaySerializer(serializers.ModelSerializer):
     full_name = serializers.CharField()
     age = serializers.IntegerField()
+    school_level = CustomChoiceField(choices=User.SCHOOL_LEVEL)
+    interests = InterestField(many=True)
 
     class Meta:
         model = User
@@ -88,6 +94,11 @@ class UserMatchDisplaySerializer(serializers.ModelSerializer):
             "full_name",
             "age",
             "description",
+            "interests",
+            "school_level",
+            "educational_institution",
+            "course",
+            "profession",
         )
 
     def to_representation(self, instance):
