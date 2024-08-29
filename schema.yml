@@ -1035,10 +1035,28 @@ components:
           type: integer
         description:
           type: string
+        interests:
+          type: array
+          items:
+            type: string
+            format: uuid
+        school_level:
+          $ref: '#/components/schemas/SchoolLevelEnum'
+        educational_institution:
+          type: string
+          maxLength: 255
+        course:
+          type: string
+          maxLength: 255
+        profession:
+          type: string
+          maxLength: 255
       required:
       - age
       - full_name
       - id
+      - interests
+      - school_level
     UserPhoto:
       type: object
       properties:
