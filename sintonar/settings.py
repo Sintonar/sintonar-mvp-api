@@ -38,7 +38,7 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip() for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(", ")
 ]
 
-ADMINS = ast.literal_eval(os.environ.get("ADMIN_EMAILS"))
+ADMINS = ast.literal_eval(os.environ.get("ADMIN_EMAILS", "[]"))
 
 logging.basicConfig(
     format="%(asctime)s - %(process)d - %(levelname)s - %(message)s",
