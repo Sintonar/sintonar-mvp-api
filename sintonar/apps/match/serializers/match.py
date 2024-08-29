@@ -29,7 +29,7 @@ class MatchCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data) -> Match:
         user_from = validated_data.pop("user_from")
         user_to = validated_data.pop("user_to")
-        like = validated_data.pop("like")
+        like = validated_data.pop("like", False)
 
         match = Match.objects.filter(
             user_from=user_from,
@@ -47,7 +47,7 @@ class MatchCreateSerializer(serializers.ModelSerializer):
                 like=like,
             )
 
-        if match.kiss:
+        if match.like:
             match_liked = Match.objects.filter(
                 user_to=user_from,
                 user_from=user_to,
