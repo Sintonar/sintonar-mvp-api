@@ -16,7 +16,6 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,20 +25,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG", default=False, cast=bool)
+DEBUG = bool(int(os.environ.get("DEBUG", 0)))
 
-ALLOWED_HOSTS = config(
-    "ALLOWED_HOSTS", cast=lambda v: [s.strip() for s in v.split(", ")]
-)
+ALLOWED_HOSTS = [
+    host.strip() for host in os.environ.get("ALLOWED_HOSTS", "").split(", ")
+]
 
-CSRF_TRUSTED_ORIGINS = config(
-    "CSRF_TRUSTED_ORIGINS", cast=lambda v: [s.strip() for s in v.split(", ")]
-)
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(", ")
+]
 
-ADMINS = ast.literal_eval(config("ADMIN_EMAILS"))
+ADMINS = ast.literal_eval(os.environ.get("ADMIN_EMAILS"))
 
 logging.basicConfig(
     format="%(asctime)s - %(process)d - %(levelname)s - %(message)s",
@@ -87,9 +86,9 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CORS_ALLOWED_ORIGINS = config(
-    "ALLOWED_HOSTS_CORS", cast=lambda v: [s.strip() for s in v.split(", ")]
-)
+CORS_ALLOWED_ORIGINS = [
+    origin.strip() for origin in os.environ.get("ALLOWED_HOSTS_CORS", "").split(", ")
+]
 # CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = "sintonar.urls"
 
@@ -118,11 +117,11 @@ WSGI_APPLICATION = "sintonar.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DATABASE_NAME"),
-        "USER": config("DATABASE_USER"),
-        "PASSWORD": config("DATABASE_PASSWORD"),
-        "HOST": config("DATABASE_HOST"),
-        "PORT": config("DATABASE_PORT"),
+        "NAME": os.environ.get("DATABASE_NAME"),
+        "USER": os.environ.get("DATABASE_USER"),
+        "PASSWORD": os.environ.get("DATABASE_PASSWORD"),
+        "HOST": os.environ.get("DATABASE_HOST"),
+        "PORT": os.environ.get("DATABASE_PORT"),
     }
 }
 
@@ -184,10 +183,10 @@ TEST_RUNNER = "sintonar.test_runner.FastTestRunner"
 
 EMAIL_BACKEND = "django_amazon_ses.EmailBackend"
 
-AWS_SES_ACCESS_KEY_ID = config("AWS_SES_ACCESS_KEY_ID")
-AWS_SES_SECRET_ACCESS_KEY = config("AWS_SES_SECRET_ACCESS_KEY")
+AWS_SES_ACCESS_KEY_ID = os.environ.get("AWS_SES_ACCESS_KEY_ID")
+AWS_SES_SECRET_ACCESS_KEY = os.environ.get("AWS_SES_SECRET_ACCESS_KEY")
 AWS_SES_REGION = "sa-east-1"
-AWS_SES_FROM_EMAIL = config("AWS_SES_FROM_EMAIL")
+AWS_SES_FROM_EMAIL = os.environ.get("AWS_SES_FROM_EMAIL")
 
 DEFAULT_FROM_EMAIL = AWS_SES_FROM_EMAIL
 
@@ -203,9 +202,9 @@ REST_FRAMEWORK = {
 }
 
 AWS_DEFAULT_ACL = None
-AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME")
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
 AWS_S3_CUSTOM_DOMAIN = "%s.s3-sa-east-1.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
 AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=86400",
@@ -221,12 +220,11 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "UPDATE_LAST_LOGIN": True,
 }
-
-REDIS_PROTOCOL = config("REDIS_PROTOCOL")
-REDIS_HOST = config("REDIS_HOST")
-REDIS_PORT = config("REDIS_PORT")
-REDIS_USER = config("REDIS_USER", default=None)
-REDIS_PASSWORD = config("REDIS_PASSWORD", default=None)
+REDIS_PROTOCOL = os.environ.get("REDIS_PROTOCOL")
+REDIS_HOST = os.environ.get("REDIS_HOST")
+REDIS_PORT = os.environ.get("REDIS_PORT")
+REDIS_USER = os.environ.get("REDIS_USER")
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
 
 BROKER_URL = (
     f"{REDIS_PROTOCOL}://{REDIS_HOST}:{REDIS_PORT}"
