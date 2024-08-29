@@ -1,11 +1,14 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from sintonar.apps.authentication.models import User
 from sintonar.apps.authentication.serializers.authentication import UserPhotoSerializer
-from sintonar.apps.authentication.serializers.fields.user import UserField
+from sintonar.apps.authentication.serializers.fields.user import (
+    InterestField,
+    UserField,
+)
 from sintonar.apps.match.models.match import Match
-
-User = get_user_model()
+from sintonar.apps.utils.serializers.fields import CustomChoiceField
 
 
 class MatchCreateSerializer(serializers.ModelSerializer):
@@ -80,6 +83,8 @@ class MatchCreateSerializer(serializers.ModelSerializer):
 class UserMatchDisplaySerializer(serializers.ModelSerializer):
     full_name = serializers.CharField()
     age = serializers.IntegerField()
+    school_level = CustomChoiceField(choices=User.SCHOOL_LEVEL)
+    interests = InterestField(many=True)
 
     class Meta:
         model = User
@@ -88,6 +93,11 @@ class UserMatchDisplaySerializer(serializers.ModelSerializer):
             "full_name",
             "age",
             "description",
+            "interests",
+            "school_level",
+            "educational_institution",
+            "course",
+            "profession",
         )
 
     def to_representation(self, instance):
