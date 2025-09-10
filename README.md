@@ -76,8 +76,8 @@ docker-compose logs backend | grep -i error
 ## 🌐 URLs de Desenvolvimento
 
 - **API**: http://localhost:8000
-- **Admin Django**: http://localhost:8000/admin  
-- **API Documentation**: http://localhost:8000/api/schema/swagger-ui/
+- **Admin Django**: http://localhost:8000/sintonar  
+- **API Documentation**: http://localhost:8000/v1/schema/swagger-ui/
 
 ## ⚙️ Configuração
 
@@ -134,7 +134,7 @@ Este setup é otimizado para demonstrações rápidas:
 
 1. Configure as variáveis de ambiente no `.env` conforme necessário
 2. Execute `docker-compose exec backend python manage.py createsuperuser` para criar um admin
-3. Acesse http://localhost:8000/admin para verificar se tudo está funcionando
+3. Acesse http://localhost:8000/sintonar para verificar se tudo está funcionando
 4. Teste as APIs através do Swagger UI
 
 Boa sorte na sua entrevista! 🚀
