@@ -18,8 +18,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia o código da aplicação para o contêiner
 COPY . /app/
 
-COPY .env /app/
-
 # Configura as variáveis de ambiente para produção
 ENV DJANGO_SETTINGS_MODULE=sintonar.settings
 ENV PYTHONUNBUFFERED=1
