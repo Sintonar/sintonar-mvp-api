@@ -136,5 +136,3 @@ Este setup é otimizado para demonstrações rápidas:
 2. Execute `docker-compose exec backend python manage.py createsuperuser` para criar um admin
 3. Acesse http://localhost:8000/sintonar para verificar se tudo está funcionando
 4. Teste as APIs através do Swagger UI
-
-Boa sorte na sua entrevista! 🚀
