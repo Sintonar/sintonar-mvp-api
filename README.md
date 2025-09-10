@@ -121,15 +121,6 @@ As configurações estão no arquivo `.env.docker` que é copiado para `.env` au
    docker-compose down -v
    ```
 
-## 🎯 Para Entrevistas
-
-Este setup é otimizado para demonstrações rápidas:
-
-1. **Setup em segundos**: `./setup-docker.sh`
-2. **Todos os serviços funcionais**: PostgreSQL, Redis, Celery
-3. **API pronta para testes**: Swagger UI disponível
-4. **Logs acessíveis**: `docker-compose logs -f`
-
 ## 📝 Próximos Passos
 
 1. Configure as variáveis de ambiente no `.env` conforme necessário
